@@ -48,6 +48,7 @@ void ll_drop(void *list, void(*drop_value)(void*)) {
 void ll_push(ll *list, void *value) {
   ll_item *item = (ll_item*)malloc(sizeof(ll_item));
   item->value = value;
+  item->next = NULL;
   
   if (list->first == NULL) {
     list->first = item;
@@ -132,6 +133,19 @@ void string_reset(string *str, char *value) {
   string_drop(str);
   *str = string_new(value);
 }
+void string_push(string *str, char value) {
+  // If we're too small, expand by one character
+  if (str->length == str->max) {
+    char *new = malloc(sizeof(char) * (str->max + 1));
+    strncpy(new, str->s, str->length);
+    free(str->s);
+    str->s = new;
+    ++str->max;
+  }
+  // Append the value to the string
+  str->s[str->length] = value;
+  ++str->length;
+}
 void string_print(string str) {
   for (int i = 0; i < str.length; ++i) {
     printf("%c", str.s[i]);
@@ -140,6 +154,33 @@ void string_print(string str) {
 void string_println(string str) {
   string_print(str);
   printf("\n");
+}
+void string_println_wrap(string str, int width) {
+  string buffer = string_new("");
+  int lineLength = 0;
+  for (int i = 0; i < str.length; ++i) {
+    if (str.s[i] == ' ') {
+      if (lineLength + buffer.length + 1 > width && !(buffer.length == 1 && buffer.s[0] == '\n')) {
+        printf("\n");
+        string_print(buffer);
+        lineLength = buffer.length + 1;
+      } else {
+        string_print(buffer);
+        lineLength += buffer.length + 1;
+      }
+      printf(" ");
+      string_set(&buffer, "");
+    } else {
+      string_push(&buffer, str.s[i]);
+    }
+  }
+  if (lineLength + buffer.length > width && !(buffer.length == 1 && buffer.s[0] == '\n')) {
+    printf("\n");
+    string_println(buffer);
+  } else {
+    string_println(buffer);
+  }
+  string_drop(&buffer);
 }
 
 Inventory inventory_new() {
@@ -290,6 +331,7 @@ void setting_install(ll *map, int x, int y, Setting setting) {
         // Push a new column and initialize it
         ll_push(map, malloc(sizeof(MapColumn)));
         *(MapColumn*)map->last->value = mapColumn_new();
+        //map->last->next = NULL;
         if (i == x) {
           break;
         }
@@ -330,7 +372,7 @@ void setting_install(ll *map, int x, int y, Setting setting) {
   *(Setting*)currentCell->value = setting;
 }
 MapColumn mapColumn_new() {
-  MapColumn result = {ll_new()};
+  MapColumn result = {.cells = ll_new()};
   return result;
 }
 void mapColumn_drop(void *column) {

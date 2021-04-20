@@ -16,23 +16,15 @@
 
 ll game_map_setup() {
   ll map = ll_new();
-  setting_install(&map, 0, 0, setting_new(
-    s("Lobby"),
-    s("A quiet, comfortable waiting place.")
-  ));
-  map_get(map, 0, 0)->visited = 1;
-  setting_install(&map, 1, 0, setting_new(
-    s("Hallway 1"),
-    s("A well-lit, homely passage with carpeted floors.")
-  ));
-  setting_install(&map, 5, 5, setting_new(
-    s("Secret room"),
-    s("Don't tell anyone.")
-  ));
+  
+  i(0, 0, "Lobby", "A quiet, comfortable waiting place.");
+  i(1, 0, "Hallway 1", "A well-lit, homely passage with carpeted floors.");
+  i(5, 5, "Secret room", "Don't tell anyone.");
   i(2, 0, "Hallway 2", "Another carpeted hallway. The lights are golden-yellow and the air is pleasantly warm.");
   i(2, 1, "Hallway 3", "Another hallway. Not a soul in sight.");
   i(2, 2, "Fresco room", "A small but not cramped room. The roof is covered in a painted fresco depicting a man and a woman, each holding elegant swords.");
   i(2, 3, "Candle room", "This room is stone and lit only by candlelight. A stone pedestal stands at one end.");
+  i(3, 3, "Candle closet", "A very small room with wooden shelves lining the walls. The shelves are covered with wax.");
   
   return map;
 }
@@ -42,6 +34,7 @@ Player game_player_setup(ll map) {
   // Starting location
   player.x = 0;
   player.y = 0;
+  map_get(map, player.x, player.y)->visited = 1;
   
   // Starting items
   Weapon *w = (Weapon*)malloc(sizeof(Weapon));
@@ -157,6 +150,7 @@ void process_input(char input[I], ll *map, Player *player) {
 int main() {
   // Map
   ll map = game_map_setup();
+  
   // Main player
   Player player = game_player_setup(map);
   
@@ -166,6 +160,9 @@ int main() {
     print(map_locate(map, player)->name);
     setc(NC, 0);
     prompt(input, " > ");
+    if (c("exit")) {
+      break;
+    }
     process_input(input, &map, &player);
   }
   

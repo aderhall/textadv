@@ -47,10 +47,14 @@ void string_drop(void *str);
 void string_set(string *str, char *value);
 // Modifies the string, shrinking it to fit the new value
 void string_reset(string *str, char *value);
+// Appends a character to the string, re-allocating if necessary
+void string_push(string *str, char value);
 // Prints the string to stdout
 void string_print(string str);
 // Prints the string and a new line to stdout
 void string_println(string str);
+// Prints the string and a new line, line-wrapping at spaces
+void string_println_wrap(string str, int width);
 
 enum Direction {
   NORTH = 0,
